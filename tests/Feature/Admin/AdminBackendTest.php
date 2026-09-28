@@ -8,6 +8,7 @@ use App\Models\SectionContent;
 use App\Models\SiteSetting;
 use App\Models\StaffMember;
 use App\Models\User;
+use Database\Seeders\EcmsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -31,9 +32,17 @@ class AdminBackendTest extends TestCase
 
     public function test_admin_can_view_dashboard(): void
     {
+        // Seed real content (not just an empty schema) so the dashboard's
+        // "Terakhir Diperbarui" stat and every collection-manager panel
+        // render against realistic data, not all-null edge cases.
+        $this->seed(EcmsSeeder::class);
         $admin = User::factory()->create(['is_admin' => true]);
 
-        $this->actingAs($admin)->get('/admin')->assertOk();
+        $response = $this->actingAs($admin)->get('/admin');
+
+        $response->assertOk();
+        $response->assertSee('Kelola Home');
+        $response->assertSee('data-collection-manager', false);
     }
 
     public function test_admin_can_update_single_instance_content(): void

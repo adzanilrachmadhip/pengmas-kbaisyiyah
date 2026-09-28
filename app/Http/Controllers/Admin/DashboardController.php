@@ -14,6 +14,7 @@ use App\Models\Photo;
 use App\Models\SectionContent;
 use App\Models\SiteSetting;
 use App\Models\StaffMember;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -24,6 +25,8 @@ class DashboardController extends Controller
 
     public function index(): View
     {
+        // ->max('updated_at') returns a raw string (not cast to Carbon), so
+        // every value is normalized to Carbon before comparing/max()-ing.
         $lastUpdated = collect([
             SectionContent::query()->max('updated_at'),
             Feature::query()->max('updated_at'),
@@ -35,10 +38,11 @@ class DashboardController extends Controller
             Photo::query()->max('updated_at'),
             Article::query()->max('updated_at'),
             SiteSetting::current()->updated_at,
-        ])->filter()->max();
+        ])->filter()->map(fn ($value) => Carbon::parse($value))->max();
 
         return view('admin.dashboard', [
             'admin' => Auth::user(),
+            'settings' => SiteSetting::current(),
             'messages' => ContactMessage::query()->latest()->get(),
             'stats' => [
                 'active_pages' => self::ACTIVE_PAGES,
