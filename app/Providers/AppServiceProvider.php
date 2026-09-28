@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\SiteSetting;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Every /admin/* route (EnsureUserIsAdmin middleware) and any
+        // future $this->authorize('access-admin') check gate on this.
+        Gate::define('access-admin', fn (?User $user) => (bool) $user?->is_admin);
+
         // NOTE: intentionally not cached as a model instance — this
         // environment's database cache store fails to unserialize Eloquent
         // models (produces __PHP_Incomplete_Class). It's a single cheap

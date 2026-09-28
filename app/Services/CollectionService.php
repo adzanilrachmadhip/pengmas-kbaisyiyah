@@ -14,7 +14,10 @@ use Illuminate\Support\Str;
  */
 class CollectionService
 {
-    public function __construct(private readonly MediaService $media) {}
+    public function __construct(
+        private readonly MediaService $media,
+        private readonly RichTextSanitizer $sanitizer,
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -108,9 +111,11 @@ class CollectionService
             }
 
             if (array_key_exists($field['name'], $data)) {
-                $model->{$field['name']} = $field['type'] === 'boolean'
-                    ? (bool) $data[$field['name']]
-                    : $data[$field['name']];
+                $model->{$field['name']} = match ($field['type']) {
+                    'boolean' => (bool) $data[$field['name']],
+                    'richtext' => $this->sanitizer->sanitize((string) $data[$field['name']]),
+                    default => $data[$field['name']],
+                };
             } elseif ($field['type'] === 'boolean') {
                 $model->{$field['name']} = false;
             }

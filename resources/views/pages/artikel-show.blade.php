@@ -26,8 +26,9 @@
       @endif
     </div>
 
-    {{-- Body is admin-authored rich text; sanitized with mews/purifier once
-         the rich-text editor ships (Step 5). --}}
+    {{-- Body is admin-authored rich text, sanitized with mews/purifier on
+         save (CollectionService::fill()) before it ever reaches storage —
+         safe to echo raw here. --}}
     <div class="prose prose-sm sm:prose-base max-w-none text-ink/80 leading-relaxed [&>p]:mb-4">
       {!! $article->body !!}
     </div>

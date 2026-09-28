@@ -1,7 +1,8 @@
 @props(['section', 'key', 'tag' => 'div', 'class' => ''])
 @php
-    // NOTE: value is trusted seeded/admin content. Once the admin rich-text
-    // editor ships (Step 5), sanitize with mews/purifier before echoing raw.
+    // NOTE: admin-submitted values are sanitized with mews/purifier on save
+    // (ContentService::update()) before they ever reach storage — safe to
+    // echo raw here. Seeded values are our own trusted markup.
     $value = ecms("{$section}.{$key}");
 @endphp
 @if ($value !== null && $value !== '')

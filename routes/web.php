@@ -36,7 +36,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->post('/logout', [AuthController::class, 'destroy'])->name('logout');
 
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin', 'throttle:300,1'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::patch('/content/{section}/{key}', [ContentController::class, 'update'])->name('content.update');

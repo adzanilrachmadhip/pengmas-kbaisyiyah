@@ -8,7 +8,10 @@ use Illuminate\Validation\ValidationException;
 
 class ContentService
 {
-    public function __construct(private readonly MediaService $media) {}
+    public function __construct(
+        private readonly MediaService $media,
+        private readonly RichTextSanitizer $sanitizer,
+    ) {}
 
     /**
      * Update a single-instance content field. Text/richtext fields take a
@@ -29,7 +32,7 @@ class ContentService
                 throw ValidationException::withMessages(['value' => 'Nilai wajib diisi.']);
             }
 
-            $content->value = $value;
+            $content->value = $content->type === 'richtext' ? $this->sanitizer->sanitize($value) : $value;
         }
 
         $content->save();
