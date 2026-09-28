@@ -264,7 +264,7 @@ class EcmsSeeder extends Seeder
                 'is_highlight' => true,
             ],
             [
-                'title' => "Perayaan Hari Besar Islam Bersama Wali Murid",
+                'title' => 'Perayaan Hari Besar Islam Bersama Wali Murid',
                 'slug' => 'perayaan-hari-besar-islam-bersama-wali-murid',
                 'excerpt' => 'Perayaan hari besar Islam tahun ini diikuti dengan antusias oleh anak-anak dan wali murid. (Contoh berita — lengkapi dengan dokumentasi asli.)',
                 'body' => "<p>Perayaan hari besar Islam menjadi salah satu momen istimewa bagi anak-anak KB 'Aisyiyah 2 Dau untuk mengenal dan mempraktikkan nilai-nilai keislaman bersama keluarga.</p><p>(Contoh isi artikel — silakan lengkapi dengan berita dan dokumentasi kegiatan yang sebenarnya melalui panel admin.)</p>",

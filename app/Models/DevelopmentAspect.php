@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Database\Factories\DevelopmentAspectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['title', 'description', 'sort_order', 'status'])]
 class DevelopmentAspect extends Model
 {
-    /** @use HasFactory<\Database\Factories\DevelopmentAspectFactory> */
+    /** @use HasFactory<DevelopmentAspectFactory> */
     use HasFactory, SoftDeletes;
 
     public function scopePublished($query)
