@@ -1,5 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\CollectionController;
+use App\Http\Controllers\Admin\ContentController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\MessageController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ContactController;
@@ -30,3 +35,23 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->post('/logout', [AuthController::class, 'destroy'])->name('logout');
+
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::patch('/content/{section}/{key}', [ContentController::class, 'update'])->name('content.update');
+    Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::patch('/messages/{message}/read', [MessageController::class, 'markRead'])->name('messages.read');
+    Route::delete('/messages/{message}', [MessageController::class, 'destroy'])->name('messages.destroy');
+
+    // Generic collection CRUD — see config/ecms.php for the registry of
+    // {resource} slugs this accepts (features, staff, articles, ...).
+    Route::post('/{resource}/reorder', [CollectionController::class, 'reorder'])->name('collection.reorder');
+    Route::patch('/{resource}/{id}/status', [CollectionController::class, 'status'])->name('collection.status');
+    Route::get('/{resource}', [CollectionController::class, 'index'])->name('collection.index');
+    Route::post('/{resource}', [CollectionController::class, 'store'])->name('collection.store');
+    Route::match(['put', 'patch'], '/{resource}/{id}', [CollectionController::class, 'update'])->name('collection.update');
+    Route::delete('/{resource}/{id}', [CollectionController::class, 'destroy'])->name('collection.destroy');
+});
