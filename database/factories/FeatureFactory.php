@@ -18,7 +18,11 @@ class FeatureFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'icon' => fake()->randomElement(['book', 'people', 'play', 'shield']),
+            'title' => fake()->sentence(3),
+            'description' => fake()->sentence(12),
+            'sort_order' => fake()->numberBetween(1, 20),
+            'status' => 'published',
         ];
     }
 }

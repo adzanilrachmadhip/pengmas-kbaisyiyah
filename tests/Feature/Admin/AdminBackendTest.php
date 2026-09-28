@@ -127,6 +127,33 @@ class AdminBackendTest extends TestCase
         $this->assertNotNull(StaffMember::find($id)->photo_path);
     }
 
+    public function test_admin_can_reorder_a_collection(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $first = Feature::factory()->create(['sort_order' => 1]);
+        $second = Feature::factory()->create(['sort_order' => 2]);
+        $third = Feature::factory()->create(['sort_order' => 3]);
+
+        $this->actingAs($admin)->postJson('/admin/features/reorder', [
+            'ids' => [$third->id, $first->id, $second->id],
+        ])->assertOk();
+
+        $this->assertSame(1, $third->fresh()->sort_order);
+        $this->assertSame(2, $first->fresh()->sort_order);
+        $this->assertSame(3, $second->fresh()->sort_order);
+    }
+
+    public function test_reorder_rejects_collections_without_sort_support(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        // 'articles' has has_sort => false in config/ecms.php (ordered by
+        // published_at instead).
+        $this->actingAs($admin)->postJson('/admin/articles/reorder', [
+            'ids' => [1, 2],
+        ])->assertStatus(422);
+    }
+
     public function test_unknown_collection_returns_404(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);

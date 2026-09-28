@@ -17,8 +17,15 @@ class StaffMemberFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->name();
+
         return [
-            //
+            'name' => $name,
+            'role' => fake()->randomElement(['Kepala KB', 'Pendidik Kelompok A', 'Pendidik Kelompok B']),
+            'photo_path' => null,
+            'initials' => strtoupper(collect(explode(' ', $name))->map(fn ($n) => $n[0])->take(2)->implode('')),
+            'sort_order' => fake()->numberBetween(1, 20),
+            'status' => 'published',
         ];
     }
 }

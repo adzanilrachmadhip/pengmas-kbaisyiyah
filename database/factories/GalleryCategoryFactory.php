@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\GalleryCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<GalleryCategory>
@@ -17,8 +18,12 @@ class GalleryCategoryFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->unique()->words(2, true);
+
         return [
-            //
+            'name' => ucfirst($name),
+            'slug' => Str::slug($name),
+            'sort_order' => fake()->numberBetween(1, 20),
         ];
     }
 }

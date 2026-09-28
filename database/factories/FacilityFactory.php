@@ -18,7 +18,10 @@ class FacilityFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'title' => fake()->words(3, true),
+            'description' => fake()->sentence(10),
+            'sort_order' => fake()->numberBetween(1, 20),
+            'status' => 'published',
         ];
     }
 }

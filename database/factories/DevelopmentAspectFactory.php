@@ -18,7 +18,10 @@ class DevelopmentAspectFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'title' => fake()->words(2, true),
+            'description' => fake()->sentence(12),
+            'sort_order' => fake()->numberBetween(1, 20),
+            'status' => 'published',
         ];
     }
 }
