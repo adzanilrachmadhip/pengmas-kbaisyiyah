@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login Admin — {{ $settings->site_name }}</title>
 <meta name="description" content="Masuk ke panel admin KB 'Aisyiyah 2 Dau untuk mengelola konten situs.">
-@fonts
-@vite(['resources/css/app.css', 'resources/js/app.js'])
+@include('partials.head-assets')
 </head>
 <body class="bg-sand-50 text-ink font-sans antialiased">
 
@@ -100,5 +99,6 @@
 
 </div>
 
+<script src="{{ asset('js/app.js') }}"></script>
 </body>
 </html>
