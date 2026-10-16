@@ -38,7 +38,16 @@ class PageController extends Controller
     public function sdm(): View
     {
         return view('pages.sdm', [
-            'staff' => StaffMember::published()->ordered()->with('educationHistories')->get(),
+            'staff' => StaffMember::published()->ordered()->get(),
+        ]);
+    }
+
+    public function sdmShow(StaffMember $staff): View
+    {
+        abort_unless($staff->status === 'published', 404);
+
+        return view('pages.sdm-show', [
+            'member' => $staff->load('educationHistories'),
         ]);
     }
 

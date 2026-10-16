@@ -43,6 +43,7 @@ class AdminBackendTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Kelola Home');
+        $response->assertSee('Kelola Contact');
         $response->assertSee('data-collection-manager', false);
     }
 
@@ -296,6 +297,26 @@ class AdminBackendTest extends TestCase
         ])->assertOk();
 
         $this->assertSame("KB 'Aisyiyah 2 Dau Baru", SiteSetting::current()->site_name);
+    }
+
+    public function test_updating_contact_fields_only_does_not_clobber_site_name(): void
+    {
+        // Regression guard: the admin dashboard splits site_settings across
+        // two forms ("Kelola Contact" and "Pengaturan Situs"); without
+        // 'sometimes' on every rule, a contact-only submission would
+        // validate the absent 'site_name' as null (nullable allows it) and
+        // Eloquent's update() would overwrite the real value with null.
+        $admin = User::factory()->create(['is_admin' => true]);
+        SiteSetting::current()->update(['site_name' => "KB 'Aisyiyah 2 Dau"]);
+
+        $this->actingAs($admin)->putJson('/admin/settings', [
+            'address' => 'Alamat Baru',
+            'phone' => '0812-1111-1111',
+        ])->assertOk();
+
+        $settings = SiteSetting::current();
+        $this->assertSame("KB 'Aisyiyah 2 Dau", $settings->site_name);
+        $this->assertSame('Alamat Baru', $settings->address);
     }
 
     public function test_admin_can_manage_contact_messages(): void

@@ -19,7 +19,7 @@
   <div class="max-w-6xl mx-auto px-6 lg:px-8">
     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
       @foreach ($staff as $i => $member)
-        <div class="border border-sand-300 bg-white p-7 text-center">
+        <a href="{{ route('about.sdm.show', $member) }}" class="group border border-sand-300 bg-white p-7 text-center hover:border-forest-600 transition-colors">
           @if ($member->photo_path)
             <img src="{{ Storage::url($member->photo_path) }}" alt="{{ $member->name }}" class="w-16 h-16 rounded-full object-cover mx-auto mb-4">
           @else
@@ -27,23 +27,13 @@
               {{ $member->initials }}
             </div>
           @endif
-          <p class="font-bold text-forest-800 text-sm">{{ $member->role }}</p>
+          <p class="font-bold text-forest-800 text-sm group-hover:text-forest-600 transition-colors">{{ $member->role }}</p>
           <p class="text-xs text-ink/50 mt-1">{{ $member->name }}</p>
-
-          @if ($member->educationHistories->isNotEmpty())
-            <ul class="mt-4 pt-4 border-t border-sand-200 text-left space-y-1.5">
-              @foreach ($member->educationHistories as $education)
-                <li class="text-xs text-ink/60 leading-relaxed">
-                  <span class="font-semibold text-forest-800">{{ $education->degree }}</span>
-                  — {{ $education->institution }}
-                  @if ($education->year)
-                    <span class="text-ink/40">({{ $education->year }})</span>
-                  @endif
-                </li>
-              @endforeach
-            </ul>
-          @endif
-        </div>
+          <span class="inline-flex items-center gap-1.5 mt-4 text-[11px] font-semibold uppercase tracking-wide text-forest-700">
+            Lihat Profil
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
       @endforeach
     </div>
   </div>

@@ -16,6 +16,7 @@ Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/about/struktur-organisasi', [PageController::class, 'strukturOrganisasi'])->name('about.struktur-organisasi');
 Route::get('/about/sumber-daya-manusia', [PageController::class, 'sdm'])->name('about.sdm');
+Route::get('/about/sumber-daya-manusia/{staff}', [PageController::class, 'sdmShow'])->name('about.sdm.show');
 
 Route::get('/gallery', [PageController::class, 'gallery'])->name('gallery');
 

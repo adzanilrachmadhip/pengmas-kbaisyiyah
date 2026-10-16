@@ -125,7 +125,16 @@ class PublicPagesTest extends TestCase
         $this->assertSame(0, ContactMessage::query()->count());
     }
 
-    public function test_sdm_page_shows_staff_education_history(): void
+    public function test_sdm_listing_links_to_each_staff_members_detail_page(): void
+    {
+        $staff = StaffMember::query()->published()->firstOrFail();
+
+        $this->get('/about/sumber-daya-manusia')
+            ->assertOk()
+            ->assertSee(route('about.sdm.show', $staff), false);
+    }
+
+    public function test_sdm_detail_page_shows_staff_education_history(): void
     {
         $staff = StaffMember::query()->published()->firstOrFail();
         EducationHistory::query()->create([
@@ -135,11 +144,38 @@ class PublicPagesTest extends TestCase
             'year' => '2021',
         ]);
 
-        $response = $this->get('/about/sumber-daya-manusia');
+        $response = $this->get(route('about.sdm.show', $staff));
 
         $response->assertOk();
+        $response->assertSee($staff->name);
         $response->assertSee('S2 Manajemen Pendidikan Uji');
         $response->assertSee('Universitas Uji Coba');
+    }
+
+    public function test_sdm_detail_page_does_not_leak_address_related_info(): void
+    {
+        // StaffMember has no address field at all — this guards the page
+        // itself never gaining an "Alamat" label for staff. (The site's own
+        // address still legitimately appears in the shared footer on every
+        // page, so that's not checked here.)
+        $staff = StaffMember::query()->published()->firstOrFail();
+
+        $response = $this->get(route('about.sdm.show', $staff));
+
+        $response->assertOk();
+        $response->assertDontSee('Alamat');
+    }
+
+    public function test_draft_staff_member_detail_page_returns_404(): void
+    {
+        $staff = StaffMember::factory()->create(['status' => 'draft']);
+
+        $this->get(route('about.sdm.show', $staff))->assertNotFound();
+    }
+
+    public function test_unknown_staff_member_detail_page_returns_404(): void
+    {
+        $this->get('/about/sumber-daya-manusia/999999')->assertNotFound();
     }
 
     public function test_login_page_renders(): void

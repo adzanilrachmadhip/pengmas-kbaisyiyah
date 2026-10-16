@@ -165,20 +165,21 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  /* ---------- 4. Site settings form ---------- */
-  var settingsForm = document.getElementById('settingsForm');
-  if (settingsForm) {
-    settingsForm.addEventListener('submit', async function (e) {
+  /* ---------- 4. Site settings forms (site_settings row, can be split
+     across multiple panels/forms — e.g. "Kelola Contact" and "Pengaturan
+     Situs" — each submitting only the fields it owns) ---------- */
+  document.querySelectorAll('[data-settings-form]').forEach(function (form) {
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
-      var payload = Object.fromEntries(new FormData(settingsForm).entries());
+      var payload = Object.fromEntries(new FormData(form).entries());
       try {
         await api('/admin/settings', Object.assign({ method: 'PUT' }, jsonBody(payload)));
-        toast('Pengaturan situs tersimpan.');
+        toast('Pengaturan tersimpan.');
       } catch (e2) {
         toast(e2.message, true);
       }
     });
-  }
+  });
 
   /* ---------- 5. Pesan Masuk (contact messages) ---------- */
   document.querySelectorAll('[data-message-read]').forEach(function (btn) {

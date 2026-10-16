@@ -56,13 +56,13 @@
         </li>
       </ul>
 
-      @if ($waNumber)
+      <!-- @if ($waNumber)
         <div class="flex flex-wrap gap-3">
           <a href="https://wa.me/{{ $waNumber }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 bg-forest-700 hover:bg-forest-800 text-sand-50 text-sm font-semibold uppercase tracking-wide px-6 py-3 rounded-sm transition-colors">
             Chat via WhatsApp
           </a>
         </div>
-      @endif
+      @endif -->
     </div>
 
     <div class="lg:col-span-7">

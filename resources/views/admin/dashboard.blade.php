@@ -34,6 +34,7 @@
             'sdm' => 'Kelola Sumber Daya Manusia',
             'gallery' => 'Kelola Gallery',
             'artikel' => 'Kelola Artikel',
+            'contact' => 'Kelola Contact',
             'messages' => 'Pesan Masuk',
             'settings' => 'Pengaturan Situs',
         ];
@@ -283,18 +284,17 @@
         </div>
       </section>
 
-      <!-- ===== PANEL: PENGATURAN SITUS ===== -->
-      <section class="dash-panel hidden" data-panel="settings">
-        <p class="text-sm text-ink/60 mb-8">Pengaturan global: identitas situs, kontak, dan peta lokasi.</p>
-        <form id="settingsForm" class="border border-sand-300 bg-white p-6 sm:p-8 max-w-3xl space-y-6">
-          <div>
-            <label class="block text-xs font-semibold uppercase tracking-wide text-forest-800 mb-2">Nama Situs</label>
-            <input type="text" name="site_name" value="{{ $settings->site_name }}" class="w-full border border-sand-300 bg-sand-50 px-4 py-3 text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold uppercase tracking-wide text-forest-800 mb-2">Tagline</label>
-            <input type="text" name="tagline" value="{{ $settings->tagline }}" class="w-full border border-sand-300 bg-sand-50 px-4 py-3 text-sm">
-          </div>
+      <!-- ===== PANEL: KELOLA CONTACT ===== -->
+      <section class="dash-panel hidden" data-panel="contact">
+        <p class="text-sm text-ink/60 mb-8">Alamat, kontak, dan jam buka yang tampil di halaman Contact Us (dan footer situs).</p>
+        <div class="border border-sand-300 bg-white p-6 sm:p-8 max-w-3xl space-y-6 mb-10">
+          <x-admin.field section="contact" key="intro_text" label="Teks Pengantar" />
+          <button type="button" data-save-panel class="inline-flex items-center gap-2 bg-forest-700 hover:bg-forest-800 text-sand-50 text-sm font-semibold uppercase tracking-wide px-7 py-3.5 rounded-sm transition-colors">
+            Simpan Perubahan
+          </button>
+        </div>
+
+        <form data-settings-form class="border border-sand-300 bg-white p-6 sm:p-8 max-w-3xl space-y-6">
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wide text-forest-800 mb-2">Alamat</label>
             <textarea name="address" rows="2" class="w-full border border-sand-300 bg-sand-50 px-4 py-3 text-sm">{{ $settings->address }}</textarea>
@@ -328,6 +328,24 @@
               <label class="block text-xs font-semibold uppercase tracking-wide text-forest-800 mb-2">Link Google Maps (embed)</label>
               <input type="text" name="maps_embed_url" value="{{ $settings->maps_embed_url }}" class="w-full border border-sand-300 bg-sand-50 px-4 py-3 text-sm">
             </div>
+          </div>
+          <button type="submit" class="inline-flex items-center gap-2 bg-forest-700 hover:bg-forest-800 text-sand-50 text-sm font-semibold uppercase tracking-wide px-7 py-3.5 rounded-sm transition-colors">
+            Simpan Perubahan
+          </button>
+        </form>
+      </section>
+
+      <!-- ===== PANEL: PENGATURAN SITUS ===== -->
+      <section class="dash-panel hidden" data-panel="settings">
+        <p class="text-sm text-ink/60 mb-8">Identitas situs: nama dan tagline yang tampil di header &amp; footer.</p>
+        <form data-settings-form class="border border-sand-300 bg-white p-6 sm:p-8 max-w-3xl space-y-6">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-forest-800 mb-2">Nama Situs</label>
+            <input type="text" name="site_name" value="{{ $settings->site_name }}" class="w-full border border-sand-300 bg-sand-50 px-4 py-3 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-forest-800 mb-2">Tagline</label>
+            <input type="text" name="tagline" value="{{ $settings->tagline }}" class="w-full border border-sand-300 bg-sand-50 px-4 py-3 text-sm">
           </div>
           <button type="submit" class="inline-flex items-center gap-2 bg-forest-700 hover:bg-forest-800 text-sand-50 text-sm font-semibold uppercase tracking-wide px-7 py-3.5 rounded-sm transition-colors">
             Simpan Perubahan
