@@ -29,6 +29,20 @@
           @endif
           <p class="font-bold text-forest-800 text-sm">{{ $member->role }}</p>
           <p class="text-xs text-ink/50 mt-1">{{ $member->name }}</p>
+
+          @if ($member->educationHistories->isNotEmpty())
+            <ul class="mt-4 pt-4 border-t border-sand-200 text-left space-y-1.5">
+              @foreach ($member->educationHistories as $education)
+                <li class="text-xs text-ink/60 leading-relaxed">
+                  <span class="font-semibold text-forest-800">{{ $education->degree }}</span>
+                  — {{ $education->institution }}
+                  @if ($education->year)
+                    <span class="text-ink/40">({{ $education->year }})</span>
+                  @endif
+                </li>
+              @endforeach
+            </ul>
+          @endif
         </div>
       @endforeach
     </div>

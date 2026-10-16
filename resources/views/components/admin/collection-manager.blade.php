@@ -7,12 +7,15 @@
     $config = config("ecms.collections.{$resource}");
     $labelOverrides = [
         'icon' => 'Ikon', 'title' => 'Judul', 'description' => 'Deskripsi', 'content' => 'Isi',
-        'name' => 'Nama', 'role' => 'Jabatan', 'initials' => 'Inisial', 'caption' => 'Keterangan',
+        'name' => 'Nama', 'role' => 'Jabatan', 'photo' => 'Foto', 'caption' => 'Keterangan',
         'gallery_category_id' => 'Kategori', 'slug' => 'Slug (URL)', 'excerpt' => 'Ringkasan',
         'body' => 'Isi Artikel', 'published_at' => 'Tanggal Terbit', 'is_highlight' => 'Sorotan (Highlight)',
+        'degree' => 'Jenjang / Gelar', 'institution' => 'Institusi', 'year' => 'Tahun',
     ];
     $fields = collect($config['fields'])->map(function ($field) use ($labelOverrides) {
-        $field['label'] = $labelOverrides[$field['name']] ?? \Illuminate\Support\Str::headline($field['name']);
+        // A field can set its own 'label' in config/ecms.php; otherwise fall
+        // back to the override dictionary, then a humanized column name.
+        $field['label'] ??= $labelOverrides[$field['name']] ?? \Illuminate\Support\Str::headline($field['name']);
         if (($field['options'] ?? null) instanceof \Closure) {
             $field['options'] = $field['options']();
         }

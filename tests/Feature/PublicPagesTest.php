@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Article;
 use App\Models\ContactMessage;
+use App\Models\EducationHistory;
 use App\Models\Feature;
 use App\Models\Photo;
+use App\Models\StaffMember;
 use Database\Seeders\EcmsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -121,6 +123,23 @@ class PublicPagesTest extends TestCase
 
         $response->assertSessionHasErrors(['name', 'phone', 'message']);
         $this->assertSame(0, ContactMessage::query()->count());
+    }
+
+    public function test_sdm_page_shows_staff_education_history(): void
+    {
+        $staff = StaffMember::query()->published()->firstOrFail();
+        EducationHistory::query()->create([
+            'staff_member_id' => $staff->id,
+            'degree' => 'S2 Manajemen Pendidikan Uji',
+            'institution' => 'Universitas Uji Coba',
+            'year' => '2021',
+        ]);
+
+        $response = $this->get('/about/sumber-daya-manusia');
+
+        $response->assertOk();
+        $response->assertSee('S2 Manajemen Pendidikan Uji');
+        $response->assertSee('Universitas Uji Coba');
     }
 
     public function test_login_page_renders(): void

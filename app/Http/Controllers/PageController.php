@@ -38,7 +38,7 @@ class PageController extends Controller
     public function sdm(): View
     {
         return view('pages.sdm', [
-            'staff' => StaffMember::published()->ordered()->get(),
+            'staff' => StaffMember::published()->ordered()->with('educationHistories')->get(),
         ]);
     }
 

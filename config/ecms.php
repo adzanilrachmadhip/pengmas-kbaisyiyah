@@ -2,6 +2,7 @@
 
 use App\Models\Article;
 use App\Models\DevelopmentAspect;
+use App\Models\EducationHistory;
 use App\Models\Facility;
 use App\Models\Feature;
 use App\Models\GalleryCategory;
@@ -84,7 +85,29 @@ return [
             'fields' => [
                 ['name' => 'name', 'type' => 'text', 'rules' => ['required', 'string', 'max:120']],
                 ['name' => 'role', 'type' => 'text', 'rules' => ['required', 'string', 'max:120']],
-                ['name' => 'initials', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:4']],
+                // No 'initials' field here on purpose — it's only a fallback
+                // avatar for when no photo is set, auto-derived from name
+                // (StaffMember::booted()). Admin uploads a photo instead.
+                ['name' => 'photo', 'type' => 'image', 'rules' => []],
+            ],
+        ],
+
+        'staff-education' => [
+            'model' => EducationHistory::class,
+            'label' => 'Riwayat Pendidikan (SDM)',
+            'label_field' => 'degree',
+            'has_status' => false,
+            'has_sort' => false,
+            'image_field' => null,
+            'fields' => [
+                [
+                    'name' => 'staff_member_id', 'type' => 'select', 'label' => 'Guru / Staf',
+                    'rules' => ['required', 'exists:staff_members,id'],
+                    'options' => fn () => StaffMember::query()->ordered()->pluck('name', 'id'),
+                ],
+                ['name' => 'degree', 'type' => 'text', 'rules' => ['required', 'string', 'max:150']],
+                ['name' => 'institution', 'type' => 'text', 'rules' => ['required', 'string', 'max:150']],
+                ['name' => 'year', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:20']],
             ],
         ],
 

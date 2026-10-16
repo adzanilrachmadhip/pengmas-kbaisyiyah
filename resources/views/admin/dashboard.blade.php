@@ -211,8 +211,17 @@
           </button>
         </div>
 
-        <p class="text-[12px] font-semibold uppercase tracking-[0.18em] text-sand-600 mb-4">Staf &amp; Tenaga Pendidik</p>
-        <x-admin.collection-manager resource="staff" />
+        <div class="space-y-10">
+          <div>
+            <p class="text-[12px] font-semibold uppercase tracking-[0.18em] text-sand-600 mb-4">Staf &amp; Tenaga Pendidik</p>
+            <x-admin.collection-manager resource="staff" />
+          </div>
+          <div>
+            <p class="text-[12px] font-semibold uppercase tracking-[0.18em] text-sand-600 mb-4">Riwayat Pendidikan</p>
+            <p class="text-xs text-ink/50 mb-4">Pilih guru/staf tujuan pada form, lalu isi jenjang, institusi, dan tahun.</p>
+            <x-admin.collection-manager resource="staff-education" />
+          </div>
+        </div>
       </section>
 
       <!-- ===== PANEL: KELOLA GALLERY ===== -->

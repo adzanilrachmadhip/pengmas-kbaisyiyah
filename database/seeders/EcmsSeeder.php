@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Article;
 use App\Models\DevelopmentAspect;
+use App\Models\EducationHistory;
 use App\Models\Facility;
 use App\Models\Feature;
 use App\Models\GalleryCategory;
@@ -15,12 +16,6 @@ use App\Models\StaffMember;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
-/**
- * Seeds every piece of content currently hardcoded in the proto/ design,
- * so the ECMS-backed site renders identically after migration.
- *
- * See docs/ECMS.md for how to extend this when adding new sections.
- */
 class EcmsSeeder extends Seeder
 {
     public function run(): void
@@ -185,14 +180,34 @@ class EcmsSeeder extends Seeder
             'intro_text' => ['Tenaga pendidik kami telah mengikuti pelatihan PAUD dan memahami tahap tumbuh kembang anak usia 2–4 tahun.', 'richtext'],
         ]);
 
+        EducationHistory::query()->truncate();
         StaffMember::query()->truncate();
         $staff = [
-            ['name' => 'Nama — lengkapi', 'role' => 'Kepala KB', 'initials' => 'KP'],
-            ['name' => 'Nama — lengkapi', 'role' => 'Pendidik Kelompok A', 'initials' => 'PA'],
-            ['name' => 'Nama — lengkapi', 'role' => 'Pendidik Kelompok B', 'initials' => 'PB'],
+            [
+                'name' => 'Nama — lengkapi', 'role' => 'Kepala KB',
+                'education' => [['degree' => 'S1 Pendidikan Guru PAUD', 'institution' => 'Institusi — lengkapi', 'year' => null]],
+            ],
+            [
+                'name' => 'Nama — lengkapi', 'role' => 'Pendidik Kelompok A',
+                'education' => [['degree' => 'S1 Pendidikan Anak Usia Dini', 'institution' => 'Institusi — lengkapi', 'year' => null]],
+            ],
+            [
+                'name' => 'Nama — lengkapi', 'role' => 'Pendidik Kelompok B',
+                'education' => [['degree' => 'D3 Kebidanan', 'institution' => 'Institusi — lengkapi', 'year' => null]],
+            ],
         ];
         foreach ($staff as $i => $member) {
-            StaffMember::query()->create($member + ['photo_path' => null, 'sort_order' => $i + 1, 'status' => 'published']);
+            $created = StaffMember::query()->create([
+                'name' => $member['name'],
+                'role' => $member['role'],
+                'photo_path' => null,
+                'sort_order' => $i + 1,
+                'status' => 'published',
+            ]);
+
+            foreach ($member['education'] as $education) {
+                $created->educationHistories()->create($education);
+            }
         }
     }
 

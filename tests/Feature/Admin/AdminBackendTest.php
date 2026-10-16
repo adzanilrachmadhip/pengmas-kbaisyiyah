@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\ContactMessage;
+use App\Models\EducationHistory;
 use App\Models\Feature;
 use App\Models\SectionContent;
 use App\Models\SiteSetting;
@@ -152,6 +153,101 @@ class AdminBackendTest extends TestCase
         $this->actingAs($admin)->postJson('/admin/articles/reorder', [
             'ids' => [1, 2],
         ])->assertStatus(422);
+    }
+
+    public function test_staff_initials_are_auto_derived_and_not_admin_editable(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        // No 'initials' field is sent — config/ecms.php no longer exposes
+        // one; the admin form uploads a photo instead.
+        $response = $this->actingAs($admin)->postJson('/admin/staff', [
+            'name' => 'Budi Santoso',
+            'role' => 'Pendidik Kelompok A',
+        ]);
+
+        $response->assertCreated();
+        $this->assertSame('BS', StaffMember::findOrFail($response->json('data.id'))->initials);
+    }
+
+    public function test_staff_initials_recompute_when_name_changes(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $staff = StaffMember::factory()->create(['name' => 'Budi Santoso', 'initials' => 'BS']);
+
+        $this->actingAs($admin)->putJson("/admin/staff/{$staff->id}", [
+            'name' => 'Citra Dewi', 'role' => $staff->role,
+        ])->assertOk();
+
+        $this->assertSame('CD', $staff->fresh()->initials);
+    }
+
+    public function test_admin_can_manage_education_history_for_a_staff_member(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $staff = StaffMember::factory()->create();
+
+        $create = $this->actingAs($admin)->postJson('/admin/staff-education', [
+            'staff_member_id' => $staff->id,
+            'degree' => 'S1 Pendidikan Anak Usia Dini',
+            'institution' => 'Universitas Negeri Malang',
+            'year' => '2018',
+        ]);
+        $create->assertCreated();
+        $id = $create->json('data.id');
+
+        $this->actingAs($admin)->getJson('/admin/staff-education')
+            ->assertOk()
+            ->assertJsonFragment(['degree' => 'S1 Pendidikan Anak Usia Dini']);
+
+        $this->actingAs($admin)->putJson("/admin/staff-education/{$id}", [
+            'staff_member_id' => $staff->id,
+            'degree' => 'S2 Manajemen Pendidikan',
+            'institution' => 'Universitas Negeri Malang',
+            'year' => '2021',
+        ])->assertOk();
+        $this->assertSame('S2 Manajemen Pendidikan', EducationHistory::find($id)->degree);
+
+        $this->actingAs($admin)->deleteJson("/admin/staff-education/{$id}")->assertOk();
+        $this->assertDatabaseMissing('education_histories', ['id' => $id]);
+    }
+
+    public function test_education_history_requires_a_valid_staff_member(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $this->actingAs($admin)->postJson('/admin/staff-education', [
+            'staff_member_id' => 999999,
+            'degree' => 'S1 Test',
+            'institution' => 'Test University',
+        ])->assertStatus(422)->assertJsonValidationErrors('staff_member_id');
+    }
+
+    public function test_soft_deleting_a_staff_member_keeps_their_education_history(): void
+    {
+        // StaffMember uses SoftDeletes, so the admin "Hapus" button never
+        // issues a real DELETE against staff_members — the FK's
+        // cascadeOnDelete() (a DB-level ON DELETE trigger) never fires, and
+        // the education rows are deliberately left intact (recoverable, and
+        // still correct if the staff member is ever restored).
+        $admin = User::factory()->create(['is_admin' => true]);
+        $staff = StaffMember::factory()->create();
+        $education = EducationHistory::factory()->create(['staff_member_id' => $staff->id]);
+
+        $this->actingAs($admin)->deleteJson("/admin/staff/{$staff->id}")->assertOk();
+
+        $this->assertSoftDeleted($staff);
+        $this->assertDatabaseHas('education_histories', ['id' => $education->id]);
+    }
+
+    public function test_force_deleting_a_staff_member_cascades_their_education_history(): void
+    {
+        $staff = StaffMember::factory()->create();
+        $education = EducationHistory::factory()->create(['staff_member_id' => $staff->id]);
+
+        $staff->forceDelete();
+
+        $this->assertDatabaseMissing('education_histories', ['id' => $education->id]);
     }
 
     public function test_unknown_collection_returns_404(): void
