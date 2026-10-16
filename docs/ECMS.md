@@ -71,8 +71,9 @@ it finds, and image fields upload immediately on change.
        'fields' => [
            ['name' => 'title', 'type' => 'text', 'rules' => ['required', 'string', 'max:120']],
            ['name' => 'description', 'type' => 'textarea', 'rules' => ['required', 'string', 'max:500']],
-           // type can be: text, textarea, richtext, boolean, date, select, image
+           // type can be: text, textarea, richtext, boolean, date, select, image, repeater
            // 'select' also needs 'options' => fn () => SomeModel::pluck('name', 'id'),
+           // 'repeater' is for a child hasMany edited inline — see below.
        ],
    ],
    ```
@@ -88,6 +89,48 @@ in `routes/web.php` already exposes
 `GET/POST /admin/{resource}`, `PUT|PATCH/DELETE /admin/{resource}/{id}`,
 `POST /admin/{resource}/reorder`, and `PATCH /admin/{resource}/{id}/status`
 for every registry key.
+
+## Adding a child list edited inline on a parent's form (a 'repeater' field)
+
+Sometimes a child collection makes more sense edited *inside* its parent's
+own form than as its own top-level collection — e.g. a staff member's
+education history (`education_histories`, belongsTo `StaffMember`). Add it
+as a `repeater` field on the parent instead of a separate registry entry:
+
+```php
+'staff' => [
+    // ...existing fields...
+    'fields' => [
+        // ...name, role, photo...
+        [
+            'name' => 'education_histories', // must match the relation's JSON key (snake_case of the method name)
+            'type' => 'repeater',
+            'label' => 'Riwayat Pendidikan',
+            'relation' => 'educationHistories', // the parent's hasMany method name
+            'child_fields' => [
+                ['name' => 'degree', 'type' => 'text', 'label' => 'Jenjang / Gelar', 'rules' => ['required', 'string', 'max:150']],
+                ['name' => 'institution', 'type' => 'text', 'label' => 'Institusi', 'rules' => ['required', 'string', 'max:150']],
+                ['name' => 'year', 'type' => 'text', 'label' => 'Tahun', 'rules' => ['nullable', 'string', 'max:20']],
+            ],
+        ],
+    ],
+],
+```
+
+Requirements: the parent model needs a `hasMany` relation method matching
+`relation`, and the child model needs its own migration + `#[Fillable]`
+(it doesn't need `published()`/`ordered()` scopes or its own registry entry
+— it's never queried as a standalone collection). `CollectionService`
+re-syncs the whole relation on every parent save: it deletes the existing
+children and recreates them from whatever rows were submitted (simplest
+correct approach for small child lists; the admin form always resubmits
+the full set). If the parent uses `SoftDeletes`, deleting the parent from
+the admin panel is a *soft* delete, so a DB-level `cascadeOnDelete()` FK
+on the child table won't fire — the children are deliberately left intact
+(and correct again if the parent is restored); only `forceDelete()` on the
+parent actually cascades. `public/js/admin.js`'s `CollectionManager`
+renders the add/remove-row UI for any `repeater` field from this config
+alone — no new JS needed either.
 
 ## Media uploads
 

@@ -25,6 +25,16 @@ class CollectionItemRequest extends FormRequest
             if ($field['type'] === 'image') {
                 continue;
             }
+
+            if ($field['type'] === 'repeater') {
+                $rules[$field['name']] = ['nullable', 'array'];
+                foreach ($field['child_fields'] as $childField) {
+                    $rules["{$field['name']}.*.{$childField['name']}"] = $childField['rules'] ?? ['nullable', 'string', 'max:255'];
+                }
+
+                continue;
+            }
+
             $rules[$field['name']] = $field['rules'];
         }
 

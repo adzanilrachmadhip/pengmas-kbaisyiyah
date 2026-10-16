@@ -2,7 +2,6 @@
 
 use App\Models\Article;
 use App\Models\DevelopmentAspect;
-use App\Models\EducationHistory;
 use App\Models\Facility;
 use App\Models\Feature;
 use App\Models\GalleryCategory;
@@ -19,7 +18,14 @@ use App\Models\StaffMember;
  *   3. one entry here.
  * No changes to AdminCollectionController itself. See docs/ECMS.md.
  *
- * Field shape: ['name' => string, 'type' => text|textarea|number|boolean|date|select|image, 'rules' => array, 'options' => ?callable]
+ * Field shape: ['name' => string, 'type' => text|textarea|number|boolean|date|select|image|repeater, 'rules' => array, 'options' => ?callable]
+ *
+ * 'repeater' is for a child hasMany relation edited inline in the parent's
+ * own form (e.g. a staff member's education history) instead of as its own
+ * top-level collection — it needs 'relation' (the parent's Eloquent hasMany
+ * method name) and 'child_fields' (same field shape, minus repeater/image).
+ * CollectionService re-syncs the whole relation (delete + recreate) on
+ * every save, see CollectionService::syncRepeater().
  */
 return [
     'collections' => [
@@ -89,25 +95,15 @@ return [
                 // avatar for when no photo is set, auto-derived from name
                 // (StaffMember::booted()). Admin uploads a photo instead.
                 ['name' => 'photo', 'type' => 'image', 'rules' => []],
-            ],
-        ],
-
-        'staff-education' => [
-            'model' => EducationHistory::class,
-            'label' => 'Riwayat Pendidikan (SDM)',
-            'label_field' => 'degree',
-            'has_status' => false,
-            'has_sort' => false,
-            'image_field' => null,
-            'fields' => [
                 [
-                    'name' => 'staff_member_id', 'type' => 'select', 'label' => 'Guru / Staf',
-                    'rules' => ['required', 'exists:staff_members,id'],
-                    'options' => fn () => StaffMember::query()->ordered()->pluck('name', 'id'),
+                    'name' => 'education_histories', 'type' => 'repeater', 'label' => 'Riwayat Pendidikan',
+                    'relation' => 'educationHistories',
+                    'child_fields' => [
+                        ['name' => 'degree', 'type' => 'text', 'label' => 'Jenjang / Gelar', 'rules' => ['required', 'string', 'max:150']],
+                        ['name' => 'institution', 'type' => 'text', 'label' => 'Institusi', 'rules' => ['required', 'string', 'max:150']],
+                        ['name' => 'year', 'type' => 'text', 'label' => 'Tahun', 'rules' => ['nullable', 'string', 'max:20']],
+                    ],
                 ],
-                ['name' => 'degree', 'type' => 'text', 'rules' => ['required', 'string', 'max:150']],
-                ['name' => 'institution', 'type' => 'text', 'rules' => ['required', 'string', 'max:150']],
-                ['name' => 'year', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:20']],
             ],
         ],
 

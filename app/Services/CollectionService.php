@@ -38,6 +38,14 @@ class CollectionService
     {
         $query = $config['model']::query();
 
+        $repeaterRelations = collect($config['fields'])
+            ->where('type', 'repeater')
+            ->pluck('relation')
+            ->filter();
+        if ($repeaterRelations->isNotEmpty()) {
+            $query->with($repeaterRelations->all());
+        }
+
         return $config['has_sort'] ? $query->ordered()->get() : $query->latest()->get();
     }
 
@@ -59,6 +67,7 @@ class CollectionService
         }
 
         $model->save();
+        $this->syncRepeaters($model, $config, $data);
 
         return $model;
     }
@@ -70,6 +79,7 @@ class CollectionService
     {
         $this->fill($model, $config, $data, $file);
         $model->save();
+        $this->syncRepeaters($model, $config, $data);
 
         return $model;
     }
@@ -106,7 +116,7 @@ class CollectionService
     private function fill(Model $model, array $config, array $data, ?UploadedFile $file): void
     {
         foreach ($config['fields'] as $field) {
-            if ($field['type'] === 'image') {
+            if ($field['type'] === 'image' || $field['type'] === 'repeater') {
                 continue;
             }
 
@@ -135,6 +145,41 @@ class CollectionService
                 "ecms/{$config['image_field']}",
                 $model->{$config['image_field']}
             );
+        }
+    }
+
+    /**
+     * Re-sync every 'repeater' field's hasMany relation from the submitted
+     * rows: delete the existing children, recreate from what was sent. The
+     * admin form always resubmits the full set (existing + edited + new),
+     * so a full replace is simpler and just as correct as diffing — these
+     * are small child lists (e.g. a handful of education history entries).
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function syncRepeaters(Model $model, array $config, array $data): void
+    {
+        foreach ($config['fields'] as $field) {
+            if ($field['type'] !== 'repeater') {
+                continue;
+            }
+
+            $relation = $model->{$field['relation']}();
+            $relation->delete();
+
+            $childNames = collect($field['child_fields'])->pluck('name');
+            foreach ((array) ($data[$field['name']] ?? []) as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+
+                $payload = collect($row)->only($childNames)->filter(fn ($value) => $value !== null && $value !== '');
+                if ($payload->isEmpty()) {
+                    continue;
+                }
+
+                $relation->create($payload->all());
+            }
         }
     }
 }

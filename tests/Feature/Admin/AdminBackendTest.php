@@ -182,45 +182,73 @@ class AdminBackendTest extends TestCase
         $this->assertSame('CD', $staff->fresh()->initials);
     }
 
-    public function test_admin_can_manage_education_history_for_a_staff_member(): void
+    public function test_admin_can_add_education_history_while_creating_a_staff_member(): void
+    {
+        // Education history is a 'repeater' field edited inline on the staff
+        // form itself (config/ecms.php), not a separate top-level collection
+        // — one POST /admin/staff creates both.
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $response = $this->actingAs($admin)->postJson('/admin/staff', [
+            'name' => 'Budi Santoso',
+            'role' => 'Pendidik Kelompok A',
+            'education_histories' => [
+                ['degree' => 'S1 Pendidikan Anak Usia Dini', 'institution' => 'Universitas Negeri Malang', 'year' => '2018'],
+                ['degree' => 'S2 Manajemen Pendidikan', 'institution' => 'Universitas Negeri Malang', 'year' => '2021'],
+            ],
+        ]);
+
+        $response->assertCreated();
+        $staff = StaffMember::findOrFail($response->json('data.id'));
+        $this->assertCount(2, $staff->educationHistories);
+        $this->assertSame('S1 Pendidikan Anak Usia Dini', $staff->educationHistories->first()->degree);
+    }
+
+    public function test_updating_a_staff_member_resyncs_their_education_history(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
         $staff = StaffMember::factory()->create();
+        $existing = EducationHistory::factory()->create(['staff_member_id' => $staff->id, 'degree' => 'Riwayat Lama']);
 
-        $create = $this->actingAs($admin)->postJson('/admin/staff-education', [
-            'staff_member_id' => $staff->id,
-            'degree' => 'S1 Pendidikan Anak Usia Dini',
-            'institution' => 'Universitas Negeri Malang',
-            'year' => '2018',
-        ]);
-        $create->assertCreated();
-        $id = $create->json('data.id');
-
-        $this->actingAs($admin)->getJson('/admin/staff-education')
-            ->assertOk()
-            ->assertJsonFragment(['degree' => 'S1 Pendidikan Anak Usia Dini']);
-
-        $this->actingAs($admin)->putJson("/admin/staff-education/{$id}", [
-            'staff_member_id' => $staff->id,
-            'degree' => 'S2 Manajemen Pendidikan',
-            'institution' => 'Universitas Negeri Malang',
-            'year' => '2021',
+        $this->actingAs($admin)->putJson("/admin/staff/{$staff->id}", [
+            'name' => $staff->name,
+            'role' => $staff->role,
+            'education_histories' => [
+                ['degree' => 'Riwayat Baru', 'institution' => 'Institusi Baru', 'year' => '2023'],
+            ],
         ])->assertOk();
-        $this->assertSame('S2 Manajemen Pendidikan', EducationHistory::find($id)->degree);
 
-        $this->actingAs($admin)->deleteJson("/admin/staff-education/{$id}")->assertOk();
-        $this->assertDatabaseMissing('education_histories', ['id' => $id]);
+        $this->assertDatabaseMissing('education_histories', ['id' => $existing->id]);
+        $this->assertDatabaseHas('education_histories', ['staff_member_id' => $staff->id, 'degree' => 'Riwayat Baru']);
     }
 
-    public function test_education_history_requires_a_valid_staff_member(): void
+    public function test_submitting_no_education_rows_clears_existing_history(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $staff = StaffMember::factory()->create();
+        EducationHistory::factory()->create(['staff_member_id' => $staff->id]);
+
+        $this->actingAs($admin)->putJson("/admin/staff/{$staff->id}", [
+            'name' => $staff->name,
+            'role' => $staff->role,
+        ])->assertOk();
+
+        $this->assertSame(0, EducationHistory::where('staff_member_id', $staff->id)->count());
+    }
+
+    public function test_an_education_row_missing_a_required_child_field_fails_validation(): void
     {
         $admin = User::factory()->create(['is_admin' => true]);
 
-        $this->actingAs($admin)->postJson('/admin/staff-education', [
-            'staff_member_id' => 999999,
-            'degree' => 'S1 Test',
-            'institution' => 'Test University',
-        ])->assertStatus(422)->assertJsonValidationErrors('staff_member_id');
+        $response = $this->actingAs($admin)->postJson('/admin/staff', [
+            'name' => 'Budi Santoso',
+            'role' => 'Pendidik Kelompok A',
+            'education_histories' => [
+                ['degree' => 'S1 Pendidikan Anak Usia Dini'], // institution missing
+            ],
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors('education_histories.0.institution');
     }
 
     public function test_soft_deleting_a_staff_member_keeps_their_education_history(): void

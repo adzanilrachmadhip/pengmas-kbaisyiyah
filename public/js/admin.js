@@ -320,6 +320,10 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   CollectionManager.prototype.renderField = function (field, item) {
+    if (field.type === 'repeater') {
+      return this.renderRepeaterField(field, item);
+    }
+
     var value = item ? item[field.name] : '';
     var id = 'f_' + this.resource + '_' + field.name;
     var control = '';
@@ -350,6 +354,73 @@ document.addEventListener('DOMContentLoaded', function () {
     return wrap;
   };
 
+  /**
+   * A 'repeater' field is edited inline as part of the parent's own form
+   * (e.g. a staff member's education history) instead of as a separate
+   * top-level collection — see config/ecms.php's field shape docs and
+   * CollectionService::syncRepeaters(), which the whole row set is sent to
+   * on save (bracket-notation FormData keys: name[i][childName]).
+   */
+  CollectionManager.prototype.renderRepeaterField = function (field, item) {
+    var self = this;
+    var wrap = document.createElement('div');
+    wrap.dataset.fieldName = field.name;
+    wrap.dataset.fieldType = 'repeater';
+    wrap.className = 'border border-sand-200 bg-sand-50/60 p-4';
+
+    var header = document.createElement('div');
+    header.className = 'flex items-center justify-between mb-3';
+    header.innerHTML =
+      '<label class="block text-xs font-semibold uppercase tracking-wide text-forest-800">' + field.label + '</label>' +
+      '<button type="button" data-action="add-row" class="text-[11px] font-semibold uppercase tracking-wide text-forest-700 hover:text-forest-500">+ Tambah</button>';
+    wrap.appendChild(header);
+
+    var rowsContainer = document.createElement('div');
+    rowsContainer.className = 'space-y-3';
+    wrap.appendChild(rowsContainer);
+
+    var existingRows = (item && item[field.name]) || [];
+    if (existingRows.length) {
+      existingRows.forEach(function (rowData) {
+        rowsContainer.appendChild(self.renderRepeaterRow(field, rowData));
+      });
+    } else {
+      rowsContainer.innerHTML = '<p class="text-xs text-ink/40" data-repeater-empty>Belum ada data. Klik &quot;+ Tambah&quot; untuk menambahkan.</p>';
+    }
+
+    header.querySelector('[data-action="add-row"]').addEventListener('click', function () {
+      rowsContainer.querySelector('[data-repeater-empty]')?.remove();
+      rowsContainer.appendChild(self.renderRepeaterRow(field, null));
+    });
+
+    return wrap;
+  };
+
+  CollectionManager.prototype.renderRepeaterRow = function (field, rowData) {
+    var row = document.createElement('div');
+    row.dataset.repeaterRow = '1';
+    row.className = 'border border-sand-300 bg-white p-3 grid sm:grid-cols-3 gap-3 items-end relative';
+
+    field.child_fields.forEach(function (child) {
+      var val = rowData ? (rowData[child.name] || '') : '';
+      var fieldWrap = document.createElement('div');
+      fieldWrap.innerHTML =
+        '<label class="block text-[10px] font-semibold uppercase tracking-wide text-ink/50 mb-1">' + child.label + '</label>' +
+        '<input type="text" data-child-name="' + child.name + '" value="' + escapeHtml(val) + '" class="w-full border border-sand-300 bg-sand-50 px-3 py-2 text-sm">';
+      row.appendChild(fieldWrap);
+    });
+
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.title = 'Hapus baris ini';
+    removeBtn.className = 'absolute -top-2 -right-2 w-5 h-5 rounded-full bg-sand-400 hover:bg-red-600 text-white text-xs leading-none flex items-center justify-center';
+    removeBtn.innerHTML = '&times;';
+    removeBtn.addEventListener('click', function () { row.remove(); });
+    row.appendChild(removeBtn);
+
+    return row;
+  };
+
   CollectionManager.prototype.closeForm = function () {
     this.formWrap.classList.add('hidden');
     this.fieldsContainer.innerHTML = '';
@@ -361,6 +432,16 @@ document.addEventListener('DOMContentLoaded', function () {
     this.fieldsContainer.querySelectorAll('[data-field-name]').forEach(function (wrap) {
       var name = wrap.dataset.fieldName;
       var type = wrap.dataset.fieldType;
+
+      if (type === 'repeater') {
+        wrap.querySelectorAll('[data-repeater-row]').forEach(function (row, i) {
+          row.querySelectorAll('[data-child-name]').forEach(function (input) {
+            fd.append(name + '[' + i + '][' + input.dataset.childName + ']', input.value);
+          });
+        });
+        return;
+      }
+
       var input = wrap.querySelector('input, textarea, select');
       if (type === 'image') {
         if (input.files[0]) fd.append('image', input.files[0]);
