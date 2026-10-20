@@ -34,7 +34,7 @@ class EcmsSeeder extends Seeder
     private function seedAdmin(): void
     {
         User::query()->firstOrCreate(
-            ['email' => 'admin@kbaisyiyah2dau.local'],
+            ['email' => 'admin@dau.com'],
             [
                 'name' => 'Admin KB Aisyiyah 2 Dau',
                 'password' => bcrypt('password'),

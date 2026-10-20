@@ -63,7 +63,7 @@
         @csrf
         <div>
           <label for="email" class="block text-xs font-semibold uppercase tracking-wide text-forest-800 mb-2">Email</label>
-          <input id="email" name="email" type="email" required autofocus value="{{ old('email') }}" placeholder="admin@kbaisyiyah2dau.local"
+          <input id="email" name="email" type="email" required autofocus value="{{ old('email') }}" placeholder="admin@dau.com"
             class="w-full border border-sand-300 bg-white px-4 py-3 text-sm focus:outline-none focus:border-forest-600">
           @error('email')
             <p class="mt-2 text-xs text-red-700">{{ $message }}</p>

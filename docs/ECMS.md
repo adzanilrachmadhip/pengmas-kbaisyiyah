@@ -164,7 +164,7 @@ are served from `storage/app/public` via the `public/storage` symlink
 Seeded by `EcmsSeeder`:
 
 ```
-email:    admin@kbaisyiyah2dau.local
+email:    admin@dau.com
 password: password
 ```
 

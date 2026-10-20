@@ -29,7 +29,7 @@ php artisan serve
 Login admin (ganti password ini sebelum production):
 
 ```
-email:    admin@kbaisyiyah2dau.local
+email:    admin@dau.com
 password: password
 ```
 
