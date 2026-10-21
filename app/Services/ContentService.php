@@ -26,6 +26,14 @@ class ContentService
             } elseif ($clear) {
                 $this->media->delete($content->value);
                 $content->value = null;
+            } else {
+                // No file and no clear flag: PHP dropped the whole request
+                // body because it exceeded post_max_size, so validation saw
+                // no 'image' key at all and 'nullable' let it through. Fail
+                // loudly instead of reporting a save that changed nothing.
+                throw ValidationException::withMessages([
+                    'image' => 'Gambar gagal diunggah — ukuran file terlalu besar. Maksimal '.MediaService::maxLabel().'.',
+                ]);
             }
         } else {
             if ($value === null) {

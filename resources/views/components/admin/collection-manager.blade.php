@@ -34,6 +34,7 @@
   data-has-status="{{ $config['has_status'] ? '1' : '0' }}"
   data-has-sort="{{ $config['has_sort'] ? '1' : '0' }}"
   data-image-field="{{ $config['image_field'] }}"
+  data-image-hint="{{ \App\Services\MediaService::hint() }}"
   data-fields='@json($fields)'
 >
   <div class="flex items-center justify-between mb-5">

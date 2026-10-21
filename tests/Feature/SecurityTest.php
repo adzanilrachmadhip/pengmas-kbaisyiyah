@@ -95,6 +95,52 @@ class SecurityTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors('image');
+        // Indonesian message, not Laravel's English default, and it states
+        // the actual limit so the admin knows what to do about it.
+        $this->assertStringContainsString('maksimal 2 mb', strtolower($response->json('errors.image.0')));
+    }
+
+    public function test_oversized_upload_rejected_by_php_itself_gets_a_clear_message(): void
+    {
+        // PHP rejects anything over upload_max_filesize before Laravel runs,
+        // handing the validator a file flagged UPLOAD_ERR_INI_SIZE — that
+        // trips the 'uploaded' rule, not 'max'. Without an override the
+        // admin just sees "The image failed to upload."
+        Storage::fake('public');
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $response = $this->actingAs($admin)->post('/admin/staff', [
+            'name' => 'Staf Uji',
+            'role' => 'Peran',
+            'image' => new UploadedFile(
+                UploadedFile::fake()->image('foto.jpg')->getPathname(),
+                'foto.jpg',
+                'image/jpeg',
+                UPLOAD_ERR_INI_SIZE,
+                true
+            ),
+        ], ['Accept' => 'application/json']);
+
+        $response->assertStatus(422);
+        $message = strtolower($response->json('errors.image.0'));
+        $this->assertStringContainsString('gagal mengunggah gambar', $message);
+        $this->assertStringContainsString('2 mb', $message);
+    }
+
+    public function test_hero_image_update_with_no_file_reaching_php_fails_loudly(): void
+    {
+        // Over post_max_size, PHP drops the entire body: no 'image' key at
+        // all, so 'nullable' passes and the save would otherwise report
+        // success having changed nothing.
+        $admin = User::factory()->create(['is_admin' => true]);
+        SectionContent::query()->create([
+            'section' => 'home', 'key' => 'hero_image', 'value' => null, 'type' => 'image',
+        ]);
+
+        $response = $this->actingAs($admin)->patchJson('/admin/content/home/hero_image', []);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('image');
     }
 
     public function test_login_endpoint_is_rate_limited(): void

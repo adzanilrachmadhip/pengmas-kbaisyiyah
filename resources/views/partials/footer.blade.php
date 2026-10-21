@@ -38,7 +38,7 @@
   </div>
   <div class="border-t border-sand-50/10">
     <div class="max-w-6xl mx-auto px-6 lg:px-8 py-6 flex flex-wrap items-center justify-between gap-3 text-xs text-sand-100/45">
-      <span>&copy; {{ now()->year }} {{ $settings->site_name }}. Bagian dari Pimpinan Cabang &apos;Aisyiyah Dau, Kabupaten Malang.</span>
+      <span>&copy; {{ now()->year }} {{ $settings->site_name }} Kabupaten Malang. Developed by Telkom University</span>
       <a href="{{ route('login') }}" class="text-sand-100/40 hover:text-sand-100/70">Login Admin</a>
     </div>
   </div>

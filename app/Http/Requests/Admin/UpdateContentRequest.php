@@ -23,4 +23,12 @@ class UpdateContentRequest extends FormRequest
             'clear' => ['sometimes', 'boolean'],
         ];
     }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return MediaService::validationMessages();
+    }
 }

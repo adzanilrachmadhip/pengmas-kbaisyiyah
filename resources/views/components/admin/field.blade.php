@@ -20,6 +20,7 @@
         <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
           data-ecms-image data-section="{{ $section }}" data-key="{{ $key }}"
           class="block w-full text-xs file:mr-3 file:py-2 file:px-3 file:border-0 file:bg-forest-700 file:text-sand-50 file:text-xs file:font-semibold file:uppercase">
+        <p class="text-[11px] text-ink/50">{{ \App\Services\MediaService::hint() }}</p>
         @if ($current)
           <button type="button" data-ecms-image-clear data-section="{{ $section }}" data-key="{{ $key }}"
             class="text-[11px] font-semibold uppercase tracking-wide text-ink/50 hover:text-red-700">Hapus Gambar</button>

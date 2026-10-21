@@ -46,6 +46,11 @@ document.addEventListener('DOMContentLoaded', function () {
       if (data && data.errors) {
         message = Object.values(data.errors).flat().join(' ');
       }
+      // 413: PHP refused the request body outright (post_max_size), so
+      // Laravel never reached our validation and its message is in English.
+      if (res.status === 413) {
+        message = 'File terlalu besar untuk diunggah. Silakan perkecil ukurannya terlebih dahulu.';
+      }
       throw new Error(message);
     }
 
@@ -216,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function () {
     this.hasStatus = el.dataset.hasStatus === '1';
     this.hasSort = el.dataset.hasSort === '1';
     this.imageField = el.dataset.imageField || null;
+    this.imageHint = el.dataset.imageHint || '';
     this.fields = JSON.parse(el.dataset.fields || '[]');
     this.listEl = el.querySelector('[data-list]');
     this.formWrap = el.querySelector('[data-form-wrap]');
@@ -343,7 +349,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }).join('');
       control = '<select id="' + id + '" class="w-full border border-sand-300 bg-sand-50 px-4 py-3 text-sm"><option value="">&mdash;</option>' + opts + '</select>';
     } else if (field.type === 'image') {
-      control = '<input type="file" id="' + id + '" accept="image/jpeg,image/png,image/webp,image/gif" class="block w-full text-xs">';
+      control = '<input type="file" id="' + id + '" accept="image/jpeg,image/png,image/webp,image/gif" class="block w-full text-xs">' +
+        (this.imageHint ? '<p class="text-[11px] text-ink/50 mt-2">' + escapeHtml(this.imageHint) + '</p>' : '');
     } else {
       control = '<input type="text" id="' + id + '" value="' + escapeHtml(value) + '" class="w-full border border-sand-300 bg-sand-50 px-4 py-3 text-sm">';
     }
