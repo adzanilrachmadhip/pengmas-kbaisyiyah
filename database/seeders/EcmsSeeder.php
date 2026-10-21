@@ -15,20 +15,28 @@ use App\Models\SiteSetting;
 use App\Models\StaffMember;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Schema;
 
 class EcmsSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->seedAdmin();
-        $this->seedSiteSettings();
-        $this->seedHomeContent();
-        $this->seedAboutContent();
-        $this->seedStrukturOrganisasiContent();
-        $this->seedSdmContent();
-        $this->seedGalleryContent();
-        $this->seedArtikelContent();
-        $this->seedContactContent();
+        // The per-section seeders truncate before re-inserting so the seeder
+        // stays re-runnable. MySQL refuses to TRUNCATE a table referenced by
+        // a foreign key (staff_members <- education_histories), unlike
+        // SQLite where Laravel compiles truncate to a plain DELETE — so FK
+        // checks are lifted for the duration of the seed.
+        Schema::withoutForeignKeyConstraints(function () {
+            $this->seedAdmin();
+            $this->seedSiteSettings();
+            $this->seedHomeContent();
+            $this->seedAboutContent();
+            $this->seedStrukturOrganisasiContent();
+            $this->seedSdmContent();
+            $this->seedGalleryContent();
+            $this->seedArtikelContent();
+            $this->seedContactContent();
+        });
     }
 
     private function seedAdmin(): void

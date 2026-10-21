@@ -152,14 +152,13 @@
       <!-- ===== PANEL: KELOLA ABOUT US ===== -->
       <section class="dash-panel hidden" data-panel="about">
         <p class="text-sm text-ink/60 mb-8">Perbarui sejarah, visi-misi, dan konten lain di halaman About Us.</p>
-        <div class="border border-sand-300 bg-white p-6 sm:p-8 max-w-3xl space-y-6 mb-10">
+        <div data-save-scope class="border border-sand-300 bg-white p-6 sm:p-8 max-w-3xl space-y-6 mb-10">
           <x-admin.field section="about" key="page_title" label="Judul Halaman" />
           <x-admin.field section="about" key="sejarah_eyebrow" label="Sejarah — Label Kecil" />
           <x-admin.field section="about" key="sejarah_title" label="Sejarah — Judul" />
           <x-admin.field section="about" key="sejarah_paragraf_1" label="Sejarah — Paragraf 1" type="richtext" />
           <x-admin.field section="about" key="sejarah_paragraf_2" label="Sejarah — Paragraf 2" type="richtext" />
           <x-admin.field section="about" key="sejarah_paragraf_3" label="Sejarah — Paragraf 3" type="richtext" />
-          <x-admin.field section="about" key="visi" label="Visi" type="textarea" />
           <x-admin.field section="about" key="perkembangan_eyebrow" label="Aspek Perkembangan — Label Kecil" />
           <x-admin.field section="about" key="perkembangan_title" label="Aspek Perkembangan — Judul" />
           <x-admin.field section="about" key="fasilitas_eyebrow" label="Fasilitas — Label Kecil" />
@@ -173,7 +172,16 @@
 
         <div class="space-y-10">
           <div>
-            <p class="text-[12px] font-semibold uppercase tracking-[0.18em] text-sand-600 mb-4">Misi</p>
+            <p class="text-[12px] font-semibold uppercase tracking-[0.18em] text-sand-600 mb-4">Visi &amp; Misi</p>
+
+            <div data-save-scope class="border border-sand-300 bg-white p-6 sm:p-8 max-w-3xl space-y-6 mb-6">
+              <x-admin.field section="about" key="visi" label="Visi" type="textarea" />
+              <button type="button" data-save-panel class="inline-flex items-center gap-2 bg-forest-700 hover:bg-forest-800 text-sand-50 text-sm font-semibold uppercase tracking-wide px-7 py-3.5 rounded-sm transition-colors">
+                Simpan Visi
+              </button>
+            </div>
+
+            <p class="text-xs text-ink/50 mb-4">Misi tampil sebagai daftar poin di halaman About Us — tambahkan satu poin per baris.</p>
             <x-admin.collection-manager resource="mission-points" />
           </div>
           <div>

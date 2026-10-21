@@ -114,8 +114,11 @@ document.addEventListener('DOMContentLoaded', function () {
   /* ---------- 2. Single-instance content: "Simpan Perubahan" per panel ---------- */
   document.querySelectorAll('[data-save-panel]').forEach(function (btn) {
     btn.addEventListener('click', async function () {
-      var panel = btn.closest('[data-panel]');
-      var fields = panel.querySelectorAll('[data-ecms-content]');
+      // A panel can hold more than one card (e.g. About Us separates
+      // "Visi & Misi" from the rest); a card marked [data-save-scope]
+      // saves only its own fields, otherwise the button covers the panel.
+      var scope = btn.closest('[data-save-scope]') || btn.closest('[data-panel]');
+      var fields = scope.querySelectorAll('[data-ecms-content]');
       btn.disabled = true;
       try {
         await Promise.all(Array.from(fields).map(function (field) {
